@@ -1,19 +1,12 @@
 const express = require("express");
-
-const {getTaskService,  getTaskByIdService} = require("../services/tasksServices");
+const {getTasks, getTaskById, createTask, updateTask, deleteTask }= require("../controllers/tasksControllers")
 const router= express.Router();
 
-router.get("/",
- async (req, res, next)=>{
-    const tasks = await getTaskService();
-    res.status(200).json(tasks);
-});
+router.get("/", getTasks);
 
-router.get("/:id",
- async(req, res, next)=>{
-    const {id} = req.params;
-    const task =  await getTaskByIdService(id);
-    res.status(200).json(task);
-});
+router.get("/:id", getTaskById);
+router.post("/", createTask);
+router.patch("/:id", updateTask);
+router.delete("/:id", deleteTask);
 
- module.exports={tasksRouter: router};
+module.exports = {tasksRouter: router};
