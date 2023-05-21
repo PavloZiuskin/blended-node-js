@@ -5,56 +5,40 @@ const {
   updateTaskByIdService,
   deleteTaskService,
 } = require("../services/tasksServices");
+const controllerWrapper = require("../utils/controllerWrapper");
 
-const getTasks = async (req, res, next) => {
-  try {
-    const tasks = await getTaskService();
-    res.status(200).json(tasks);
-  } catch (error) {
-    next(error);
-  }
-};
+const getTasks = controllerWrapper(async (req, res) => {
+  const {page = 1, limit = 10, completed} = req.query;
+  const tasks = await getTaskService(page, limit, completed);
+  res.status(200).json(tasks);
+});
 
-const getTaskById = async (req, res, next) => {
-  try {
+
+const getTaskById = controllerWrapper(async (req, res) => {
     const { id } = req.params;
     const task = await getTaskByIdService(id);
     res.status(200).json(task);
-  } catch (error) {
-    next(error);
-  }
-};
+});
 
-const createTask = async (req, res, next) => {
-  try {
-    const body = req.body;
-    const newTask = await createTaskService(body);
-    return res.status(201).json(newTask);
-  } catch (error) {
-    next(error);
-  }
-};
+const createTask = controllerWrapper(async (req, res) => {
+  const body = req.body;
+  const newTask = await createTaskService(body);
+  return res.status(201).json(newTask);
+});
 
-const updateTask = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const body = req.body;
-    const updatedTask = await updateTaskByIdService(id, body);
-    res.status(200).json(updatedTask);
-  } catch (error) {
-    next(error);
-  }
-};
+const updateTask = controllerWrapper(async (req, res) => {
+  const { id } = req.params;
+  const body = req.body;
+  const updatedTask = await updateTaskByIdService(id, body);
+  res.status(200).json(updatedTask);
 
-const deleteTask = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const deletedTask = await deleteTaskService(id);
-    res.status(204).json(deletedTask);
-  } catch (error) {
-    next(error);
-  }
-};
+});
+
+const deleteTask = controllerWrapper(async (req, res) => {
+  const { id } = req.params;
+  const deletedTask = await deleteTaskService(id);
+  res.status(204).json(deletedTask);
+});
 
 module.exports = {
   getTasks,

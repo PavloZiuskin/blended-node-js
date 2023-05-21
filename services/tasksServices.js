@@ -1,49 +1,43 @@
-const fs = require("fs/promises");
-const crypto = require("crypto");
-const path = require("path");
+const Task = require("../models/Task")
+const HttpError = require("../utils/HttpError");
 
-// const tasksPath = path.join(__dirname, "db", "tasks.json");
-const tasksPath = path.join(process.cwd(), "db", "tasks.json");
-
-const getTaskService= async () => {
-    const tasks = await fs.readFile(tasksPath);
-    return JSON.parse(tasks);
-
+const getTaskService= async (page, limit, completed) => {
+    const skip = ((page - 1) * limit);
+    const filter = {};
+    if(completed === "true"){
+        filter.completed = true;
+    } else if(completed === "false"){
+        filter.completed = false
+    }; 
+    return await Task.find(filter).limit(limit).skip(skip);
 };
 
 const getTaskByIdService = async (id) => {
-    const tasks = await getTaskService();
-    return  tasks.find(task=> task.id===id);
+    const task = await Task.findById(id);
+    if(!task){
+        throw new HttpError(400 , "task created ")
+    }
+    return task;
 };
 
 const createTaskService = async (data) => {
-    const tasks = await getTaskService();
-    const newTask = {...data, id: crypto.randomUUID()};
-    tasks.push(newTask);
-    await fs.writeFile(tasksPath, JSON.stringify(tasks, null, 2));
-    return newTask;
+    return await Task.create(data)
 };
 
 const updateTaskByIdService = async(id, data) => {
-    const tasks = await getTaskService();
-    let task = tasks.find(task=>task.id === id);
+    
+    let task = await Task.findByIdAndUpdate(id, data, {new: true});
     if (!task){
-        throw new Error("task not found");
+        throw new HttpError(400,"task not found");
     }
-    task = { ...task, ...data};
-    await fs.writeFile(tasksPath, JSON.stringify(tasks, null, 2));
     return task;
 };
 
 const deleteTaskService = async (id) => {
-    const tasks = await getTaskService();
-    const index = tasks.findIndex(task=> task.id === id);
-    if(index === -1){
-        throw new Error("task not found");
+    const removeTask = await Task.findByIdAndDelete(id);
+    if (!removeTask) {
+        throw new HttpError(404, "task not fond")
     }
-    tasks.splice(index, 1);
-
-    await fs.writeFile(tasksPath, JSON.stringify(tasks, null, 2));
     return id;
 }
 
